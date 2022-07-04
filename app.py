@@ -51,7 +51,7 @@ def transform_view():
     result = transform(stream.read())
 
     df = pd.read_csv(StringIO(result), sep=";")
-  
+    dfn = df
     df.fraude.replace(True,1,inplace=True)
     df.fraude.replace(False,0,inplace=True)
     df.is_prime.replace(True,1,inplace=True)
@@ -106,11 +106,12 @@ def transform_view():
     # load the model from disk
     filename = "./model.sav"
     loaded_model = pickle.load(open(filename, 'rb'))
-    df['Prediction_is_fraud'] = loaded_model.predict(scaled_df)
+    dfn['Prediction_is_fraud'] = loaded_model.predict(scaled_df)
 
     
 
-    response = make_response(df.to_csv())
+
+    response = make_response(dfn.to_csv())
     response.headers["Content-Disposition"] = "attachment; filename=result.csv"
     return response
 
