@@ -51,7 +51,7 @@ def transform_view():
     df = df.drop(['experience'], axis=1)
     df = df.drop(['salary'], axis=1)
     # load the model from disk
-    filename = "./finalized_model.sav"
+    filename = "./model.sav"
     loaded_model = pickle.load(open(filename, 'rb'))
     df['prediction'] = loaded_model.predict(df)
 
