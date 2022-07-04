@@ -5,6 +5,9 @@ import csv
 import pandas as pd
 import numpy as np
 import pickle
+import json
+
+
 
 
 
@@ -48,12 +51,62 @@ def transform_view():
     result = transform(stream.read())
 
     df = pd.read_csv(StringIO(result), sep=";")
-    df = df.drop(['experience'], axis=1)
-    df = df.drop(['salary'], axis=1)
+  
+    df.fraude.replace(True,1,inplace=True)
+    df.fraude.replace(False,0,inplace=True)
+    df.is_prime.replace(True,1,inplace=True)
+    df.is_prime.replace(False,0,inplace=True)
+    df.genero.replace('F',0,inplace=True)
+    df.genero.replace('M',1,inplace=True)
+    df.genero.replace('--',0,inplace=True)
+
+    df.dispositivo = df.dispositivo.str.replace(';', ',', regex = False)
+    df.dispositivo = df.dispositivo.str.replace("'", '"', regex = False)
+    y = json.loads(df.dispositivo[1])
+    type(y)
+    df.dispositivo = df.dispositivo.apply(lambda  x : json.loads(x) if x != np.nan else x)
+
+
+    df['dispositivo_model'] = df.dispositivo.apply(lambda x : x['model'])
+    df['dispositivo_divice_score'] = df.dispositivo.apply(lambda x : x['device_score'])
+    df['dispositivo_os'] = df.dispositivo.apply(lambda x : x['os'])
+
+    df1=df
+    df1['fecha']=df['fecha']
+    df1['fecha'] =  pd.to_datetime(df1['fecha'], infer_datetime_format=True)
+    df['dia'] = df1['fecha'].apply(lambda x: x.day_name())
+
+
+    if(df['monto'].dtypes=='object'):
+        df.monto = df.monto.str.replace(',', '.', regex = False) 
+        df['monto'] = df['monto'].astype(float) 
+    if(df['dcto'].dtypes=='object'):
+        df.dcto = df.dcto.str.replace(',', '.', regex = False) 
+        df['dcto'] = df['dcto'].astype(float) 
+    if(df['cashback'].dtypes=='object'):
+        df.cashback = df.cashback.str.replace(',', '.', regex = False) 
+        df['cashback'] = df['cashback'].astype(float) 
+    if(df['ID_USER'].dtypes!='object'):
+        df['ID_USER'] = df['ID_USER'].astype(int) 
+    if(df['fecha'].dtypes!='object'):
+        df['fecha'] = df['fecha'].astype(str) 
+        
+    df= df.drop(['dispositivo','fecha'], axis=1)
+    df['fraude'].value_counts(normalize = True)
+    df = pd.get_dummies(df, columns=None)
+
+    scaler = MinMaxScaler()
+    dat = scaler.fit_transform(df.values)
+    scaled = pd.dfFrame(dat, columns=df.columns)
+# There are now x features, since we broke down categorical vars
+
+    fraude = df['fraude']
+    scaled_df = scaled.drop(columns=['fraude']) 
+
     # load the model from disk
     filename = "./model.sav"
     loaded_model = pickle.load(open(filename, 'rb'))
-    df['prediction'] = loaded_model.predict(df)
+    df['Prediction_is_fraud'] = loaded_model.predict(scaled_df)
 
     
 
