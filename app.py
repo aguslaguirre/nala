@@ -91,7 +91,7 @@ def transform_view():
     if(df['fecha'].dtypes!='object'):
         df['fecha'] = df['fecha'].astype(str) 
         
-    df= df.drop(['dispositivo','fecha'], axis=1)
+    df= df.drop(['dispositivo','fecha', 'establecimiento','ciudad'], axis=1)
     df['fraude'].value_counts(normalize = True)
     df = pd.get_dummies(df, columns=None)
 
