@@ -97,7 +97,7 @@ def transform_view():
 
     scaler = MinMaxScaler()
     dat = scaler.fit_transform(df.values)
-    scaled = pd.dfFrame(dat, columns=df.columns)
+    scaled = pd.DataFrame(dat, columns=df.columns)
 # There are now x features, since we broke down categorical vars
 
     fraude = df['fraude']
